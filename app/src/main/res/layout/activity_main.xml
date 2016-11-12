@@ -13,13 +13,13 @@
     android:orientation="vertical">
 
     <Button
-        android:id="@+id/buttonStart"
+        android:id="@+id/buttonTakePicture"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="Take Picture"/>
 
     <Button
-        android:id="@+id/buttonStop"
+        android:id="@+id/buttonViewCards"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="View Cards"/>
