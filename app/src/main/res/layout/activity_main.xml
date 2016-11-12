@@ -12,6 +12,16 @@
     tools:context="com.example.han.businesscardsindexer.MainActivity"
     android:orientation="vertical">
 
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="This is a BusinessCardsIndexer app. \r\n \r\n Click any button to continue\r\n \r\n \r\n \r\n"
+        android:padding="10dp"
+        android:textColor="#0d0202"
+        />
+
+
     <Button
         android:id="@+id/buttonTakePicture"
         android:layout_width="fill_parent"
