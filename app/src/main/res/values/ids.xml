@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="field" type="id">fieldValue</item>
+    <item name="button" type="id" />
+    <item name="button_image" type="id">takePicture</item>
+</resources>
