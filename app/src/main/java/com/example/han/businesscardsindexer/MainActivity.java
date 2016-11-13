@@ -187,7 +187,9 @@ public class MainActivity extends Activity {
         catch (Exception e) {
             Log.e("exception: ", e.getMessage());
         }*/
-        bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+
+        ///bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
 
         TessBaseAPI baseApi = new TessBaseAPI();
         String DATA_PATH = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath();
@@ -196,12 +198,14 @@ public class MainActivity extends Activity {
         //baseApi.setImage(bitmap);
 
         Pix pixs = ReadFile.readBitmap(bitmap);
+
         //float skewDeg = -1* Skew.findSkew(pixs);
         //Log.d("skew: ", "" + skewDeg);
         //pixs = rotate(pixs, skewDeg);
         //Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs);
         Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
         baseApi.setImage(pixForOCR);
+        baseApi.setImage(bitmap);
 
         String recognizedText = baseApi.getUTF8Text();
         baseApi.end();
