@@ -1,9 +1,12 @@
 package com.example.han.businesscardsindexer;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -18,6 +21,10 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.googlecode.leptonica.android.Binarize;
 import com.googlecode.leptonica.android.GrayQuant;
 import com.googlecode.leptonica.android.Pix;
@@ -26,21 +33,23 @@ import com.googlecode.leptonica.android.Skew;
 import com.googlecode.leptonica.android.WriteFile;
 import com.googlecode.tesseract.android.TessBaseAPI;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 import static com.googlecode.leptonica.android.Rotate.rotate;
 import static com.googlecode.leptonica.android.Skew.findSkew;
 
 public class MainActivity extends Activity {
-/*
-    public static final int MY_PERMISSIONS_REQUEST_CAMERA = 100;
-    public static final String ALLOW_KEY = "ALLOWED";
-    public static final String CAMERA_PREF = "camera_pref";
-*/
+    /*
+        public static final int MY_PERMISSIONS_REQUEST_CAMERA = 100;
+        public static final String ALLOW_KEY = "ALLOWED";
+        public static final String CAMERA_PREF = "camera_pref";
+    */
     Context context;
     Button takePicture;
     Button viewCards;
@@ -50,11 +59,12 @@ public class MainActivity extends Activity {
     File image;
     Boolean taken = false;
     protected static final String PHOTO_TAKEN = "photo_taken";
+    public FeedReaderDbHelper mDbHelper;
 
     //public static final int MEDIA_TYPE_IMAGE = 1;
 
     public class ButtonClickHandler implements View.OnClickListener {
-        public void onClick( View view ){
+        public void onClick(View view) {
             startCameraActivity();
         }
     }
@@ -68,13 +78,14 @@ public class MainActivity extends Activity {
         takePicture = (Button) findViewById(R.id.buttonTakePicture);
         viewCards = (Button) findViewById(R.id.buttonViewCards);
         imageView = (ImageView) findViewById(R.id.image_view);
-        takePicture.setOnClickListener( new ButtonClickHandler() );
+        takePicture.setOnClickListener(new ButtonClickHandler());
         viewCards.setOnClickListener(new View.OnClickListener() {
-                                         @Override
-                                         public void onClick(View v) {
-                                             startActivity(new Intent(MainActivity.this, CardDetails.class));
-                                         }
-                                     });
+            @Override
+            public void onClick(View v) {
+                //startActivity(new Intent(MainActivity.this, CardDetails.class));
+
+            }
+        });
         /*
         String folder_main = "images";
         File tmpf = new File(getDir("bin", Context.MODE_PRIVATE).getAbsolutePath(), folder_main);
@@ -110,7 +121,7 @@ public class MainActivity extends Activity {
 
         startActivityForResult( intent, 0 );
 */
-        Intent imageIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        Intent imageIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 
         //folder stuff
@@ -125,14 +136,15 @@ public class MainActivity extends Activity {
         imageIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriSavedImage);
         startActivityForResult(imageIntent, 0);
 
+
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i( "MakeMachine", "resultCode: " + resultCode );
-        switch( resultCode ) {
+        Log.i("MakeMachine", "resultCode: " + resultCode);
+        switch (resultCode) {
             case 0:
-                Log.i( "MakeMachine", "User cancelled" );
+                Log.i("MakeMachine", "User cancelled");
                 break;
 
             case -1:
@@ -141,13 +153,12 @@ public class MainActivity extends Activity {
         }
     }
 
-    protected void onPhotoTaken()
-    {
+    protected void onPhotoTaken() {
         taken = true;
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 4;
         String imgPath = image.getAbsolutePath();
-        Bitmap bitmap = BitmapFactory.decodeFile( imgPath, options );
+        Bitmap bitmap = BitmapFactory.decodeFile(imgPath, options);
         imageView.setImageBitmap(bitmap);
 
         /*try {
@@ -210,7 +221,7 @@ public class MainActivity extends Activity {
         String recognizedText = baseApi.getUTF8Text();
         baseApi.end();
 
-        TextView myTV = (TextView)findViewById(R.id.textView);
+        TextView myTV = (TextView) findViewById(R.id.textView);
         myTV.setText(recognizedText);
 
 
@@ -218,6 +229,16 @@ public class MainActivity extends Activity {
         // String recognizedText = text from image
 
 
+        // Gets the data repository in write mode
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+// Create a new map of values, where column names are the keys
+        ContentValues values = new ContentValues();
+        values.put(FeedReaderContract.FeedEntry.COLUMN_CARD_TEXT, recognizedText);
+        values.put(FeedReaderContract.FeedEntry.COLUMN_IMAGE, getBytes(bitmap));
+
+// Insert the new row, returning the primary key value of the new row
+        long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
 
 
         /*
@@ -227,8 +248,38 @@ public class MainActivity extends Activity {
         Bitmap bitmap = BitmapFactory.decodeFile( imgPath, options );
         imageView.setImageBitmap(bitmap);
         */
+
     }
 
+    public Cursor getImageFile() {
+
+
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+// Define a projection that specifies which columns from the database
+// you will actually use after this query.
+        String[] projection = {
+                FeedReaderContract.FeedEntry.COLUMN_IMAGE
+        };
+
+// Filter results WHERE "title" = 'My Title'
+        String selection = FeedReaderContract.FeedEntry.COLUMN_CARD_TEXT;
+
+// How you want the results sorted in the resulting Cursor
+        String sortOrder =
+                FeedReaderContract.FeedEntry.COLUMN_IMAGE;
+
+        Cursor c = db.rawQuery("select image from contacts", null);
+
+
+        return  c;
+    }
+
+    public static byte[] getBytes(Bitmap bitmap) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
+        return stream.toByteArray();
+    }
     /*
     private void copyAssets() {
         Log.d("tag", "starting copy files");
@@ -317,7 +368,7 @@ public class MainActivity extends Activity {
             out.close();
             out = null;
             return true;
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -326,21 +377,21 @@ public class MainActivity extends Activity {
     private static void copyFile(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
         int read;
-        while((read = in.read(buffer)) != -1){
+        while ((read = in.read(buffer)) != -1) {
             out.write(buffer, 0, read);
         }
     }
 
 
     @Override
-    protected void onSaveInstanceState( Bundle outState ) {
-        outState.putBoolean( MainActivity.PHOTO_TAKEN, taken );
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean(MainActivity.PHOTO_TAKEN, taken);
     }
+
     @Override
-    protected void onRestoreInstanceState( Bundle savedInstanceState)
-    {
-        Log.i( "MakeMachine", "onRestoreInstanceState()");
-        if( savedInstanceState.getBoolean( MainActivity.PHOTO_TAKEN ) ) {
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Log.i("MakeMachine", "onRestoreInstanceState()");
+        if (savedInstanceState.getBoolean(MainActivity.PHOTO_TAKEN)) {
             onPhotoTaken();
         }
     }

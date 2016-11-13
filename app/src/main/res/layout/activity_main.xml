@@ -13,6 +13,10 @@
     android:orientation="vertical">
 
 
+    <SearchView
+        android:layout_width="match_parent"
+        android:layout_height="33dp" />
+
     <TextView
         android:id="@+id/IntroText"
         android:layout_width="fill_parent"
@@ -27,7 +31,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/take_picture"/>
-
 
     <Button
         android:id="@+id/buttonViewCards"
