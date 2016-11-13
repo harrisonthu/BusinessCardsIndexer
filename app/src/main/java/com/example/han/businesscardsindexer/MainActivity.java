@@ -1,27 +1,21 @@
 package com.example.han.businesscardsindexer;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 
@@ -192,8 +186,8 @@ public class MainActivity extends Activity {
         String recognizedText = baseApi.getUTF8Text();
         baseApi.end();
 
-        TextView myTV = (TextView)findViewById(R.id.textView);
-        myTV.setText(recognizedText);
+//        TextView myTV = (TextView)findViewById(R.id.textView);
+//        myTV.setText(recognizedText);
 
 
 

@@ -29,7 +29,7 @@ allprojects {
 }
 
 dependencies {
-    compile(name:'tess-two-release', ext:'aar')
+    compile(name: 'tess-two-release', ext: 'aar')
 }
 
 dependencies {
@@ -39,4 +39,7 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:23.4.0'
     testCompile 'junit:junit:4.12'
+}
+dependencies {
+    compile 'com.android.support:design:23.+'
 }

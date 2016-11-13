@@ -13,6 +13,10 @@
     android:orientation="vertical">
 
 
+    <SearchView
+        android:layout_width="match_parent"
+        android:layout_height="33dp" />
+
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -40,10 +44,4 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="20dp"
         android:contentDescription="" />
-
-    <TextView
-        android:text="TextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView" />
 </LinearLayout>
