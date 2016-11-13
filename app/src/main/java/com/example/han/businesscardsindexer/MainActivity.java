@@ -30,15 +30,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class MainActivity extends Activity {
-
+/*
     public static final int MY_PERMISSIONS_REQUEST_CAMERA = 100;
     public static final String ALLOW_KEY = "ALLOWED";
     public static final String CAMERA_PREF = "camera_pref";
-
+*/
     Context context;
     Button takePicture;
     Button viewCards;
@@ -108,14 +106,10 @@ public class MainActivity extends Activity {
 
         startActivityForResult( intent, 0 );
 */
-
-
-
-
         Intent imageIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 
-//folder stuff
+        //folder stuff
         //imagesFolder = new File(context.getFilesDir(), "images");
         //imagesFolder.mkdirs();
         File imagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
@@ -308,12 +302,6 @@ public class MainActivity extends Activity {
     }
 
 
-
-
-
-
-
-
     @Override
     protected void onSaveInstanceState( Bundle outState ) {
         outState.putBoolean( MainActivity.PHOTO_TAKEN, taken );
@@ -326,5 +314,4 @@ public class MainActivity extends Activity {
             onPhotoTaken();
         }
     }
-
 }
