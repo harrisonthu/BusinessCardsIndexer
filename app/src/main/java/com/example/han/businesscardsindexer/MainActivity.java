@@ -43,6 +43,14 @@ public class MainActivity extends Activity {
         viewCards = (Button) findViewById(R.id.buttonViewCards);
         imageView = (ImageView) findViewById(R.id.image_view);
 
+        viewCards.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(MainActivity.this, CardDetails.class));
+            }
+        });
+
         // set a listener
         takePicture.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -60,8 +68,9 @@ public class MainActivity extends Activity {
         if(!folder.exists()){
             folder.mkdir();
         }
-        File image_file = new File(folder,"cam_image.jpg");
-        return image_file;
+        //File image_file = new File(folder,"cam_image.jpg");
+        //return image_file;
+        return new File(folder, "cam_image.jpg");
 
     }
 
