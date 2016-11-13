@@ -205,7 +205,7 @@ public class MainActivity extends Activity {
         Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.0F);
         //Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
         baseApi.setImage(pixForOCR);
-        baseApi.setImage(bitmap);
+        //baseApi.setImage(bitmap);
 
         String recognizedText = baseApi.getUTF8Text();
         baseApi.end();
@@ -266,6 +266,13 @@ public class MainActivity extends Activity {
             out.write(buffer, 0, read);
         }
     }*/
+
+
+
+
+
+
+
 
 
 
