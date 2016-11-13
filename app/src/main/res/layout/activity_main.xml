@@ -10,7 +10,6 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.han.businesscardsindexer.MainActivity"
-
     android:orientation="vertical">
 
 
@@ -18,9 +17,9 @@
         android:id="@+id/IntroText"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="This is a BusinessCardsIndexerapp: \n\n Click any button to continue\n"
+        android:gravity="center"
+        android:text="This is a BusinessCardsIndexer app: \n\n Click any button to continue\n"
         android:textSize="35px" />
-
 
 
     <Button
@@ -29,10 +28,12 @@
         android:layout_height="wrap_content"
         android:text="@string/take_picture"/>
 
+
     <Button
         android:id="@+id/buttonViewCards"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
         android:text="@string/view_cards"/>
 
     <ImageView
@@ -40,7 +41,6 @@
         android:layout_height="200dp"
         android:id="@+id/image_view"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="20dp"
         android:contentDescription="" />
 
     <TextView
