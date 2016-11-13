@@ -17,6 +17,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.googlecode.leptonica.android.Binarize;
+import com.googlecode.leptonica.android.GrayQuant;
+import com.googlecode.leptonica.android.Pix;
+import com.googlecode.leptonica.android.ReadFile;
+import com.googlecode.leptonica.android.Skew;
+import com.googlecode.leptonica.android.WriteFile;
 import com.googlecode.tesseract.android.TessBaseAPI;
 
 import java.io.File;
@@ -24,6 +30,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import static com.googlecode.leptonica.android.Rotate.rotate;
+import static com.googlecode.leptonica.android.Skew.findSkew;
 
 public class MainActivity extends Activity {
 /*
@@ -41,7 +50,7 @@ public class MainActivity extends Activity {
     Boolean taken = false;
     protected static final String PHOTO_TAKEN = "photo_taken";
 
-    public static final int MEDIA_TYPE_IMAGE = 1;
+    //public static final int MEDIA_TYPE_IMAGE = 1;
 
     public class ButtonClickHandler implements View.OnClickListener {
         public void onClick( View view ){
@@ -115,7 +124,6 @@ public class MainActivity extends Activity {
         imageIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriSavedImage);
         startActivityForResult(imageIntent, 0);
 
-
     }
 
     @Override
@@ -141,7 +149,7 @@ public class MainActivity extends Activity {
         Bitmap bitmap = BitmapFactory.decodeFile( imgPath, options );
         imageView.setImageBitmap(bitmap);
 
-        try {
+        /*try {
             ExifInterface exif = new ExifInterface(imgPath);
 
             int exifOrientation = exif.getAttributeInt(
@@ -165,7 +173,7 @@ public class MainActivity extends Activity {
             if (rotate != 0) {
                 int w = bitmap.getWidth();
                 int h = bitmap.getHeight();
-
+                Log.d("rotation: ", "" + rotate);
                 // Setting pre rotate
                 Matrix mtx = new Matrix();
                 mtx.preRotate(rotate);
@@ -176,18 +184,38 @@ public class MainActivity extends Activity {
         }
         catch (Exception e) {
             Log.e("exception: ", e.getMessage());
-        }
-        bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        }*/
+
+
+        ///bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
 
         TessBaseAPI baseApi = new TessBaseAPI();
         String DATA_PATH = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath();
         baseApi.init(DATA_PATH, "eng");
+
+        //baseApi.setImage(bitmap);
+
+        Pix pixs = ReadFile.readBitmap(bitmap);
+
+        //float skewDeg = -1* Skew.findSkew(pixs);
+        //Log.d("skew: ", "" + skewDeg);
+        //pixs = rotate(pixs, skewDeg);
+        //Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs);
+        Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.0F);
+        //Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
+        baseApi.setImage(pixForOCR);
         baseApi.setImage(bitmap);
+
         String recognizedText = baseApi.getUTF8Text();
         baseApi.end();
 
 //        TextView myTV = (TextView)findViewById(R.id.textView);
 //        myTV.setText(recognizedText);
+
+
+        // bitmap = camera image
+        // String recognizedText = text from image
+
 
 
 
