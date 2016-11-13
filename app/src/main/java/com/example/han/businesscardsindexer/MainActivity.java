@@ -23,6 +23,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.googlecode.leptonica.android.Binarize;
+import com.googlecode.leptonica.android.GrayQuant;
+import com.googlecode.leptonica.android.Pix;
+import com.googlecode.leptonica.android.ReadFile;
+import com.googlecode.leptonica.android.Skew;
+import com.googlecode.leptonica.android.WriteFile;
 import com.googlecode.tesseract.android.TessBaseAPI;
 
 import java.io.File;
@@ -30,6 +36,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import static com.googlecode.leptonica.android.Rotate.rotate;
+import static com.googlecode.leptonica.android.Skew.findSkew;
 
 public class MainActivity extends Activity {
 /*
@@ -171,7 +180,7 @@ public class MainActivity extends Activity {
             if (rotate != 0) {
                 int w = bitmap.getWidth();
                 int h = bitmap.getHeight();
-
+                Log.d("rotation: ", "" + rotate);
                 // Setting pre rotate
                 Matrix mtx = new Matrix();
                 mtx.preRotate(rotate);
@@ -188,7 +197,17 @@ public class MainActivity extends Activity {
         TessBaseAPI baseApi = new TessBaseAPI();
         String DATA_PATH = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath();
         baseApi.init(DATA_PATH, "eng");
-        baseApi.setImage(bitmap);
+
+        //baseApi.setImage(bitmap);
+
+        Pix pixs = ReadFile.readBitmap(bitmap);
+        float skewDeg = -1* Skew.findSkew(pixs);
+        Log.d("skew: ", "" + skewDeg);
+        pixs = rotate(pixs, skewDeg);
+        //Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs);
+        Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
+        baseApi.setImage(pixForOCR);
+
         String recognizedText = baseApi.getUTF8Text();
         baseApi.end();
 
@@ -196,6 +215,8 @@ public class MainActivity extends Activity {
         myTV.setText(recognizedText);
 
 
+        // bitmap = camera image
+        // String recognizedText = text from image
 
         /*
         BitmapFactory.Options options = new BitmapFactory.Options();
