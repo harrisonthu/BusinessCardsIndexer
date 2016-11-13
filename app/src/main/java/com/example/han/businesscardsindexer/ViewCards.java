@@ -1,5 +1,6 @@
 package com.example.han.businesscardsindexer;
 
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -16,9 +17,11 @@ public class ViewCards extends AppCompatActivity {
         setContentView(R.layout.activity_view_cards);
 
         LinearLayout cardViewLayout = (LinearLayout) findViewById(R.id.cardViewLayout);
-        byte[][] cardPics = getImageFile();
-        for (int i = 0; i < cardPics.length; i++) {
-            Bitmap img = BitmapFactory.decodeByteArray(cardPics[i], 0, cardPics[i].length);
+        Cursor c = MainActivity.getImageFile();
+        c.moveToFirst();
+        for (int i = 0; i < c.getCount(); i++) {
+            byte[] myBlob = c.getBlob(i);
+            Bitmap img = BitmapFactory.decodeByteArray(myBlob, 0, myBlob.length);
             BitmapDrawable bd = new BitmapDrawable(getResources(), img);
             ImageView imageView = new ImageView(ViewCards.this);
             imageView.setBackgroundDrawable(bd);

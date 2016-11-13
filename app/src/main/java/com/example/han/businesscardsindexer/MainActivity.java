@@ -59,7 +59,7 @@ public class MainActivity extends Activity {
     File image;
     Boolean taken = false;
     protected static final String PHOTO_TAKEN = "photo_taken";
-    public FeedReaderDbHelper mDbHelper;
+    public static FeedReaderDbHelper mDbHelper;
 
     //public static final int MEDIA_TYPE_IMAGE = 1;
 
@@ -108,7 +108,7 @@ public class MainActivity extends Activity {
         }
         //copyAssets();
         copyAssetFolder(getAssets(), "tessdata", getDir("bin", Context.MODE_PRIVATE).getAbsolutePath() + "/tessdata");
-
+        mDbHelper = new FeedReaderDbHelper(getApplicationContext());
     }
 
     protected void startCameraActivity() {
@@ -236,9 +236,15 @@ public class MainActivity extends Activity {
         ContentValues values = new ContentValues();
         values.put(FeedReaderContract.FeedEntry.COLUMN_CARD_TEXT, recognizedText);
         values.put(FeedReaderContract.FeedEntry.COLUMN_IMAGE, getBytes(bitmap));
+        //values.put("cardText", recognizedText);
+        //values.put("image", getBytes(bitmap));
+        db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
+
+
 
 // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
+        //db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
+        db.close();
 
 
         /*
@@ -251,7 +257,7 @@ public class MainActivity extends Activity {
 
     }
 
-    public Cursor getImageFile() {
+    public static Cursor getImageFile() {
 
 
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
