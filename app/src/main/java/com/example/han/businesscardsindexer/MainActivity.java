@@ -51,7 +51,7 @@ public class MainActivity extends Activity {
     Boolean taken = false;
     protected static final String PHOTO_TAKEN = "photo_taken";
 
-    public static final int MEDIA_TYPE_IMAGE = 1;
+    //public static final int MEDIA_TYPE_IMAGE = 1;
 
     public class ButtonClickHandler implements View.OnClickListener {
         public void onClick( View view ){
@@ -124,7 +124,6 @@ public class MainActivity extends Activity {
         Log.d("image path: ", image.getAbsolutePath());
         imageIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriSavedImage);
         startActivityForResult(imageIntent, 0);
-
 
     }
 
@@ -203,7 +202,8 @@ public class MainActivity extends Activity {
         //Log.d("skew: ", "" + skewDeg);
         //pixs = rotate(pixs, skewDeg);
         //Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs);
-        Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
+        Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.0F);
+        //Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
         baseApi.setImage(pixForOCR);
         baseApi.setImage(bitmap);
 
@@ -216,6 +216,9 @@ public class MainActivity extends Activity {
 
         // bitmap = camera image
         // String recognizedText = text from image
+
+
+
 
         /*
         BitmapFactory.Options options = new BitmapFactory.Options();
