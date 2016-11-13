@@ -13,12 +13,16 @@
     android:orientation="vertical">
 
 
+    <SearchView
+        android:layout_width="match_parent"
+        android:layout_height="33dp" />
+
     <TextView
         android:id="@+id/IntroText"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="This is a BusinessCardsIndexer app: \n\n Click any button to continue\n"
+        android:text="This is a BusinessCardsIndexer app.\n\nA Black screen occurs after taking a pic.\n\nClick any button to continue..."
         android:textSize="35px" />
 
 
@@ -28,12 +32,11 @@
         android:layout_height="wrap_content"
         android:text="@string/take_picture"/>
 
-
     <Button
         android:id="@+id/buttonViewCards"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="0dp"
         android:text="@string/view_cards"/>
 
     <ImageView
@@ -44,7 +47,7 @@
         android:contentDescription="" />
 
     <TextView
-        android:text="TextView"
+        android:text="Preview:"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/textView" />

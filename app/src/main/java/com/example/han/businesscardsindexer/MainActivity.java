@@ -60,55 +60,8 @@ public class MainActivity extends Activity {
     Boolean taken = false;
     protected static final String PHOTO_TAKEN = "photo_taken";
     public FeedReaderDbHelper mDbHelper;
-    public static final int MEDIA_TYPE_IMAGE = 1;
 
-    //DBHelper mydb;
-
-    FeedReaderContract frc;
-    //FeedReaderContract.FeedReaderDbHelper frdbh = new FeedReaderDbHelper();
-
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
-
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    public Action getIndexApiAction() {
-        Thing object = new Thing.Builder()
-                .setName("Main Page") // TODO: Define a title for the content shown.
-                // TODO: Make sure this auto-generated URL is correct.
-                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
-                .build();
-        return new Action.Builder(Action.TYPE_VIEW)
-                .setObject(object)
-                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
-                .build();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        AppIndex.AppIndexApi.start(client, getIndexApiAction());
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        AppIndex.AppIndexApi.end(client, getIndexApiAction());
-        client.disconnect();
-    }
-
+    //public static final int MEDIA_TYPE_IMAGE = 1;
 
     public class ButtonClickHandler implements View.OnClickListener {
         public void onClick(View view) {
@@ -156,14 +109,6 @@ public class MainActivity extends Activity {
         //copyAssets();
         copyAssetFolder(getAssets(), "tessdata", getDir("bin", Context.MODE_PRIVATE).getAbsolutePath() + "/tessdata");
 
-        // initialize database
-        //mydb = new DBHelper(this);
-        //frc = new FeedReaderContract();
-
-        mDbHelper = new FeedReaderDbHelper(context);
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     protected void startCameraActivity() {
@@ -252,7 +197,9 @@ public class MainActivity extends Activity {
         catch (Exception e) {
             Log.e("exception: ", e.getMessage());
         }*/
-        bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+
+        ///bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
 
         TessBaseAPI baseApi = new TessBaseAPI();
         String DATA_PATH = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath();
@@ -261,12 +208,15 @@ public class MainActivity extends Activity {
         //baseApi.setImage(bitmap);
 
         Pix pixs = ReadFile.readBitmap(bitmap);
+
         //float skewDeg = -1* Skew.findSkew(pixs);
         //Log.d("skew: ", "" + skewDeg);
         //pixs = rotate(pixs, skewDeg);
         //Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs);
-        Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
+        Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.0F);
+        //Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
         baseApi.setImage(pixForOCR);
+        //baseApi.setImage(bitmap);
 
         String recognizedText = baseApi.getUTF8Text();
         baseApi.end();
@@ -275,15 +225,6 @@ public class MainActivity extends Activity {
         myTV.setText(recognizedText);
 
 
-
-        /*mydb.insertText(recognizedText,getBytes(bitmap));
-        ArrayList<String> contacts = mydb.getAllContacts();
-        String s = "";
-        for (String contact : contacts) {
-            s = s + contact;
-        }
-        Log.d("This is my print out",s);
-*/
         // bitmap = camera image
         // String recognizedText = text from image
 
@@ -376,6 +317,9 @@ public class MainActivity extends Activity {
             out.write(buffer, 0, read);
         }
     }*/
+
+
+
 
 
     private static boolean copyAssetFolder(AssetManager assetManager,
