@@ -22,7 +22,7 @@
         />
 
 
-    <Button
+    <!--<Button
         android:id="@+id/buttonTakePicture"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -40,6 +40,22 @@
         android:id="@+id/image_view"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="20dp"
-        />
+        />-->
+
+    <ImageView
+        android:id="@+id/imageview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/button_image"/>
+
+    <Button
+        android:id="@+id/button_image"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:onClick="takePicture"
+        android:text="Take a picture!"/>
 
 </LinearLayout>
