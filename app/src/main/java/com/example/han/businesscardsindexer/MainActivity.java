@@ -126,6 +126,5 @@ public class MainActivity extends Activity {
         return new File(mediaStorageDir.getPath() + File.separator +
                 "IMG_"+ timeStamp + ".jpg");
     }
-
-
+    
 }
