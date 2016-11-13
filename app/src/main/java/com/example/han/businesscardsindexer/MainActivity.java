@@ -151,7 +151,7 @@ public class MainActivity extends Activity {
         Bitmap bitmap = BitmapFactory.decodeFile( imgPath, options );
         imageView.setImageBitmap(bitmap);
 
-        try {
+        /*try {
             ExifInterface exif = new ExifInterface(imgPath);
 
             int exifOrientation = exif.getAttributeInt(
@@ -186,7 +186,7 @@ public class MainActivity extends Activity {
         }
         catch (Exception e) {
             Log.e("exception: ", e.getMessage());
-        }
+        }*/
         bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
 
         TessBaseAPI baseApi = new TessBaseAPI();
@@ -196,9 +196,9 @@ public class MainActivity extends Activity {
         //baseApi.setImage(bitmap);
 
         Pix pixs = ReadFile.readBitmap(bitmap);
-        float skewDeg = -1* Skew.findSkew(pixs);
-        Log.d("skew: ", "" + skewDeg);
-        pixs = rotate(pixs, skewDeg);
+        //float skewDeg = -1* Skew.findSkew(pixs);
+        //Log.d("skew: ", "" + skewDeg);
+        //pixs = rotate(pixs, skewDeg);
         //Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs);
         Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
         baseApi.setImage(pixForOCR);
