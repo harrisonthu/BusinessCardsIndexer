@@ -80,7 +80,7 @@ public class MainActivity extends Activity {
         viewCards.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent(MainActivity.this, CardDetails.class));
+                startActivity(new Intent(MainActivity.this, ViewCards.class));
 
             }
         });
@@ -189,7 +189,7 @@ public class MainActivity extends Activity {
 
         TessBaseAPI baseApi = new TessBaseAPI();
         String DATA_PATH = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath();
-        baseApi.init(DATA_PATH, "eng");
+        baseApi.init(DATA_PATH, "eng", TessBaseAPI.OEM_TESSERACT_ONLY);
 
         //baseApi.setImage(bitmap);
 
@@ -199,11 +199,9 @@ public class MainActivity extends Activity {
         //Log.d("skew: ", "" + skewDeg);
         //pixs = rotate(pixs, skewDeg);
         //Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs);
-        Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.0F);
+        Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.1F);
         //Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
         baseApi.setImage(pixForOCR);
-        //baseApi.setImage(bitmap);
-
         String recognizedText = baseApi.getUTF8Text();
         baseApi.end();
 

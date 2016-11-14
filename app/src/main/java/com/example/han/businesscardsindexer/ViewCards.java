@@ -19,15 +19,14 @@ public class ViewCards extends AppCompatActivity {
         LinearLayout cardViewLayout = (LinearLayout) findViewById(R.id.cardViewLayout);
         Cursor c = MainActivity.getImageFile();
         c.moveToFirst();
-        for (int i = 0; i < c.getCount(); i++) {
-            byte[] myBlob = c.getBlob(i);
+        while (!c.isAfterLast()) {
+            byte[] myBlob = c.getBlob(c.getColumnIndex(FeedReaderContract.FeedEntry.COLUMN_IMAGE));
             Bitmap img = BitmapFactory.decodeByteArray(myBlob, 0, myBlob.length);
             BitmapDrawable bd = new BitmapDrawable(getResources(), img);
             ImageView imageView = new ImageView(ViewCards.this);
             imageView.setBackgroundDrawable(bd);
             cardViewLayout.addView(imageView);
+            c.moveToNext();
         }
     }
-
-//    Bitmap getImageFile()
 }
