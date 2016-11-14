@@ -54,8 +54,6 @@ public class MainActivity extends Activity {
     Button takePicture;
     Button viewCards;
     ImageView imageView;
-    //File imgPath;
-    //File imagesFolder;
     File image;
     Boolean taken = false;
     protected static final String PHOTO_TAKEN = "photo_taken";
@@ -86,29 +84,17 @@ public class MainActivity extends Activity {
 
             }
         });
-        /*
-        String folder_main = "images";
-        File tmpf = new File(getDir("bin", Context.MODE_PRIVATE).getAbsolutePath(), folder_main);
-        if (!tmpf.exists()) {
-            tmpf.mkdirs();
-        }
+        //imgPath = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath() + File.separator + "images" + File.separator + "pic.png";
 
-        imgPath = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath() + File.separator + "images" + File.separator + "pic.png";
-        */
-        context = getApplicationContext();
+
         String folder_main = "tessdata";
         File tmpf = new File(getDir("bin", Context.MODE_PRIVATE).getAbsolutePath(), folder_main);
         if (!tmpf.exists()) {
             tmpf.mkdirs();
         }
-        folder_main = "eng";
-        tmpf = new File(getDir("bin", Context.MODE_PRIVATE).getAbsolutePath(), folder_main);
-        if (!tmpf.exists()) {
-            tmpf.mkdirs();
-        }
-        //copyAssets();
         copyAssetFolder(getAssets(), "tessdata", getDir("bin", Context.MODE_PRIVATE).getAbsolutePath() + "/tessdata");
-        mDbHelper = new FeedReaderDbHelper(getApplicationContext());
+        context = getApplicationContext();
+        mDbHelper = new FeedReaderDbHelper(context);
     }
 
     protected void startCameraActivity() {
@@ -120,7 +106,7 @@ public class MainActivity extends Activity {
         intent.putExtra( MediaStore.EXTRA_OUTPUT, outputFileUri );
 
         startActivityForResult( intent, 0 );
-*/
+        */
         Intent imageIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 
@@ -128,8 +114,8 @@ public class MainActivity extends Activity {
         //imagesFolder = new File(context.getFilesDir(), "images");
         //imagesFolder.mkdirs();
         File imagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        image = new File(imagePath, "pic.png");
         imagePath.mkdirs();
+        image = new File(imagePath, "pic.png");
         //image = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "pic.png");
         Uri uriSavedImage = Uri.fromFile(image);
         Log.d("image path: ", image.getAbsolutePath());
@@ -141,10 +127,10 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i("MakeMachine", "resultCode: " + resultCode);
+        Log.i("Picture", "resultCode: " + resultCode);
         switch (resultCode) {
             case 0:
-                Log.i("MakeMachine", "User cancelled");
+                Log.i("Picture", "User cancelled");
                 break;
 
             case -1:
@@ -224,6 +210,7 @@ public class MainActivity extends Activity {
         TextView myTV = (TextView) findViewById(R.id.textView);
         myTV.setText(recognizedText);
 
+        Log.d("OCR", recognizedText);
 
         // bitmap = camera image
         // String recognizedText = text from image
@@ -232,18 +219,14 @@ public class MainActivity extends Activity {
         // Gets the data repository in write mode
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-// Create a new map of values, where column names are the keys
+        // Create a new map of values, where column names are the keys
         ContentValues values = new ContentValues();
+
         values.put(FeedReaderContract.FeedEntry.COLUMN_CARD_TEXT, recognizedText);
         values.put(FeedReaderContract.FeedEntry.COLUMN_IMAGE, getBytes(bitmap));
         //values.put("cardText", recognizedText);
         //values.put("image", getBytes(bitmap));
         db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
-
-
-
-// Insert the new row, returning the primary key value of the new row
-        //db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
         db.close();
 
 
@@ -258,26 +241,13 @@ public class MainActivity extends Activity {
     }
 
     public static Cursor getImageFile() {
-
-
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-// Define a projection that specifies which columns from the database
-// you will actually use after this query.
-        String[] projection = {
-                FeedReaderContract.FeedEntry.COLUMN_IMAGE
-        };
-
-// Filter results WHERE "title" = 'My Title'
-        String selection = FeedReaderContract.FeedEntry.COLUMN_CARD_TEXT;
-
-// How you want the results sorted in the resulting Cursor
-        String sortOrder =
-                FeedReaderContract.FeedEntry.COLUMN_IMAGE;
-
-        Cursor c = db.rawQuery("select image from contacts", null);
-
-
+        /*
+        SELECT image, FROM contacts
+         */
+        String queryString = "SELECT " + FeedReaderContract.FeedEntry.COLUMN_IMAGE + " FROM " + FeedReaderContract.FeedEntry.TABLE_NAME;
+        Cursor c = db.rawQuery(queryString, null);
         return  c;
     }
 
