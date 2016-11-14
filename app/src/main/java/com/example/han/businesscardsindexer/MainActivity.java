@@ -39,17 +39,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-
-import static com.googlecode.leptonica.android.Rotate.rotate;
-import static com.googlecode.leptonica.android.Skew.findSkew;
 
 public class MainActivity extends Activity {
-    /*
-        public static final int MY_PERMISSIONS_REQUEST_CAMERA = 100;
-        public static final String ALLOW_KEY = "ALLOWED";
-        public static final String CAMERA_PREF = "camera_pref";
-    */
+
     Context context;
     Button takePicture;
     Button viewCards;
@@ -58,8 +50,6 @@ public class MainActivity extends Activity {
     Boolean taken = false;
     protected static final String PHOTO_TAKEN = "photo_taken";
     public static FeedReaderDbHelper mDbHelper;
-
-    //public static final int MEDIA_TYPE_IMAGE = 1;
 
     public class ButtonClickHandler implements View.OnClickListener {
         public void onClick(View view) {
@@ -80,7 +70,7 @@ public class MainActivity extends Activity {
         viewCards.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, ViewCards.class));
+                startActivity(new Intent(MainActivity.this, CardDetails.class));
 
             }
         });
@@ -189,7 +179,7 @@ public class MainActivity extends Activity {
 
         TessBaseAPI baseApi = new TessBaseAPI();
         String DATA_PATH = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath();
-        baseApi.init(DATA_PATH, "eng", TessBaseAPI.OEM_TESSERACT_ONLY);
+        baseApi.init(DATA_PATH, "eng");
 
         //baseApi.setImage(bitmap);
 
@@ -199,9 +189,11 @@ public class MainActivity extends Activity {
         //Log.d("skew: ", "" + skewDeg);
         //pixs = rotate(pixs, skewDeg);
         //Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs);
-        Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.1F);
+        Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.0F);
         //Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
         baseApi.setImage(pixForOCR);
+        //baseApi.setImage(bitmap);
+
         String recognizedText = baseApi.getUTF8Text();
         baseApi.end();
 
