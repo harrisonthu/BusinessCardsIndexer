@@ -45,11 +45,7 @@ import static com.googlecode.leptonica.android.Rotate.rotate;
 import static com.googlecode.leptonica.android.Skew.findSkew;
 
 public class MainActivity extends Activity {
-    /*
-        public static final int MY_PERMISSIONS_REQUEST_CAMERA = 100;
-        public static final String ALLOW_KEY = "ALLOWED";
-        public static final String CAMERA_PREF = "camera_pref";
-    */
+
     Context context;
     Button takePicture;
     Button viewCards;
@@ -82,7 +78,7 @@ public class MainActivity extends Activity {
         viewCards.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, ViewCards.class));
+                startActivity(new Intent(MainActivity.this, CardDetails.class));
 
             }
         });
@@ -353,5 +349,4 @@ public class MainActivity extends Activity {
             onPhotoTaken();
         }
     }
-
 }
