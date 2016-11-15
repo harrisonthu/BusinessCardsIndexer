@@ -203,8 +203,8 @@ public class MainActivity extends Activity {
         String DATA_PATH = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath();
         baseApi.init(DATA_PATH, "eng", TessBaseAPI.OEM_TESSERACT_ONLY);
 
-        TessBaseAPI baseApi2 = new TessBaseAPI();
-        baseApi2.init(DATA_PATH, "eng", TessBaseAPI.OEM_TESSERACT_ONLY);
+        //TessBaseAPI baseApi2 = new TessBaseAPI();
+        //baseApi2.init(DATA_PATH, "eng", TessBaseAPI.OEM_TESSERACT_ONLY);
 
         //baseApi.setImage(bitmap);
 
@@ -218,9 +218,9 @@ public class MainActivity extends Activity {
         Pix pixs = ReadFile.readBitmap(bitmap);
         //read the file
         //Pix pixs = ReadFile.readFile(image);
-        Pix pixForOCR1 = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.1F);
-        Log.d("OCR", "preprocessing done for first method");
-        Pix pixForOCR2 = GrayQuant.pixThresholdToBinary(pixs, 50);
+        //Pix pixForOCR1 = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.1F);
+        //Log.d("OCR", "preprocessing done for first method");
+        Pix pixForOCR1 = GrayQuant.pixThresholdToBinary(pixs, 50);
         Log.d("OCR", "preprocessing done for second method");
         //float skewDeg = -1* Skew.findSkew(pixs);
         //Log.d("skew: ", "" + skewDeg);
@@ -232,15 +232,15 @@ public class MainActivity extends Activity {
         String recognizedText = baseApi.getUTF8Text();
         Log.d("OCR", "OCR done for first method");
 
-        baseApi2.setImage(pixForOCR2);
-        String recognizedText2 = baseApi2.getUTF8Text();
-        Log.d("OCR", "OCR done for second method");
+        //baseApi2.setImage(pixForOCR2);
+        //String recognizedText2 = baseApi2.getUTF8Text();
+        //Log.d("OCR", "OCR done for second method");
 
         baseApi.end();
         TextView myTV = (TextView) findViewById(R.id.textView);
         myTV.setText(recognizedText);
         Log.d("OCR1", recognizedText);
-        Log.d("OCR2", recognizedText2);
+        //Log.d("OCR2", recognizedText2);
 
         // bitmap = camera image
         // String recognizedText = text from image
