@@ -1,6 +1,7 @@
 package com.example.han.businesscardsindexer;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -10,8 +11,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.AsyncPlayer;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -50,10 +53,11 @@ public class MainActivity extends Activity {
     Button clearDatabase;
     ImageView imageView;
     File image;
-    protected static final String PHOTO_TAKEN = "photo_taken";
+    //protected static final String PHOTO_TAKEN = "photo_taken";
     public static FeedReaderDbHelper mDbHelper;
     //private Uri picUri;
-    Uri uriSavedImage;
+    //Uri uriSavedImage;
+    ProgressDialog pd;
 
     //intent values
     final static int CAMERA_CAPTURE = 1;
@@ -61,6 +65,97 @@ public class MainActivity extends Activity {
     public class ButtonClickHandler implements View.OnClickListener {
         public void onClick(View view) {
             startCameraActivity();
+        }
+    }
+
+    private class OCRTask extends AsyncTask<Bitmap, String, String> {
+
+        @Override
+        protected String doInBackground(Bitmap... bitmaps) {
+
+            Bitmap bitmap = bitmaps[0].copy(Bitmap.Config.ARGB_8888, true);
+            TessBaseAPI baseApi = new TessBaseAPI();
+            String DATA_PATH = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath();
+            baseApi.init(DATA_PATH, "eng", TessBaseAPI.OEM_TESSERACT_ONLY);
+
+            //TessBaseAPI baseApi2 = new TessBaseAPI();
+            //baseApi2.init(DATA_PATH, "eng", TessBaseAPI.OEM_TESSERACT_ONLY);
+
+            //baseApi.setImage(bitmap);
+
+            /*
+            Preprocessing:
+            - Binarize
+            - Detect/Correct skew
+            */
+
+            publishProgress("Starting OCR...");
+
+            Pix pixs = ReadFile.readBitmap(bitmap);
+            Pix pixForOCR1 = GrayQuant.pixThresholdToBinary(pixs, 50);
+            pixs.recycle();
+
+            float skewDeg = Skew.findSkew(pixForOCR1);
+            Log.d("skew", "" + skewDeg);
+            if (skewDeg > 0) {
+                pixForOCR1 = rotate(pixForOCR1, skewDeg);
+            }
+            //Pix pixForOCR1 = Binarize.otsuAdaptiveThreshold(pixForOCR1);
+            //Pix pixForOCR1 = Binarize.otsuAdaptiveThreshold(pixForOCR1, 100, 100, 100, 100, 0.1F);
+            Log.d("OCR", "preprocessing done");
+            publishProgress("Preprocessing for OCR done");
+            baseApi.setImage(pixForOCR1);
+            String recognizedText = baseApi.getUTF8Text();
+            Log.d("OCR", "OCR done");
+            baseApi.end();
+            TextView myTV = (TextView) findViewById(R.id.textView);
+            //myTV.setText(recognizedText);
+            Log.d("OCR", recognizedText);
+
+            publishProgress("OCR complete, saving picture");
+
+            // bitmapPreview = (smaller) camera image
+            // String recognizedText = text from image
+            // Gets the data repository in write mode
+            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+            // Create a new map of values, where column names are the keys
+            ContentValues values = new ContentValues();
+
+            values.put(FeedReaderContract.FeedEntry.COLUMN_CARD_TEXT, recognizedText);
+            //storing the 1/4th size image in the database for storage-saving reasons
+            values.put(FeedReaderContract.FeedEntry.COLUMN_IMAGE, getBytes(bitmaps[1]));
+
+            //values.put("cardText", recognizedText);
+            //values.put("image", getBytes(bitmap));
+            db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
+            db.close();
+            pixForOCR1.recycle();
+            bitmap.recycle();
+            return recognizedText;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pd = new ProgressDialog(MainActivity.this, ProgressDialog.STYLE_SPINNER);
+            pd.setCanceledOnTouchOutside(false);
+            pd.setCancelable(false);
+            pd.setMessage("OCR is starting...");
+            pd = ProgressDialog.show(MainActivity.this, "", "Saving");
+        }
+
+        @Override
+        protected void onProgressUpdate(String... progress) {
+            pd.setMessage(progress[0]);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute("Finished OCR");
+            TextView myTV = (TextView) findViewById(R.id.textView);
+            myTV.setText(result);
+            pd.dismiss();
         }
     }
 
@@ -126,7 +221,7 @@ public class MainActivity extends Activity {
                 Log.d("Picture", "Fatal error. Crashing shortly...");
             }
         }
-        uriSavedImage = Uri.fromFile(image);
+        Uri uriSavedImage = Uri.fromFile(image);
         Log.d("image path", image.getAbsolutePath());
         imageIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriSavedImage);
         startActivityForResult(imageIntent, CAMERA_CAPTURE);
@@ -162,6 +257,7 @@ public class MainActivity extends Activity {
 
         imageView.setImageBitmap(bitmapPreview);
 
+        new OCRTask().execute(bitmap, bitmapPreview);
         /*try {
             context.getContentResolver().notifyChange(uriSavedImage, null);
             ExifInterface exif = new ExifInterface(imgPath);
@@ -199,7 +295,7 @@ public class MainActivity extends Activity {
         catch (Exception e) {
             Log.e("exception", e.getMessage());
         }*/
-
+        /*
         bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         TessBaseAPI baseApi = new TessBaseAPI();
         String DATA_PATH = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath();
@@ -209,14 +305,14 @@ public class MainActivity extends Activity {
         //baseApi2.init(DATA_PATH, "eng", TessBaseAPI.OEM_TESSERACT_ONLY);
 
         //baseApi.setImage(bitmap);
-
+        */
         /*
         Preprocessing:
             - Binarize
             - Detect/Correct skew
          */
 
-
+        /*
         Pix pixs = ReadFile.readBitmap(bitmap);
         Pix pixForOCR1 = GrayQuant.pixThresholdToBinary(pixs, 50);
         pixs.recycle();
@@ -256,7 +352,7 @@ public class MainActivity extends Activity {
         db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
         db.close();
         pixForOCR1.recycle();
-        bitmap.recycle();
+        bitmap.recycle();*/
     }
 
     public static void clearDatabase() {
