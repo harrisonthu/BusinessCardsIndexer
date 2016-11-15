@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">BusinessCardsIndexer</string>
-    <string name="additonal_details">Additional Details</string>
+    <string name="additional_details">Additional Details</string>
     <string name="company_name">Company Name</string>
     <string name="email">Email</string>
     <string name="job_title">Job Title</string>
@@ -9,7 +9,8 @@
     <string name="postal_address">Postal Address</string>
     <string name="save_changes">Save Changes</string>
     <string name="take_picture">Take Picture</string>
-    <string name="this_is_a_businesscardsindexer_app_r_n_r_n_click_any_button_to_continue_r_n_r_n_r_n_r_n">This is a BusinessCardsIndexer app. r\n r\n Click any button to continuer\n r\n r\n r\n</string>
+    <string name="main_screen"
+        >This is a BusinessCardsIndexer app.\n\nA Black screen occurs after taking a pic.\n\nClick any button to continue...</string>
     <string name="view_cards">View Cards</string>
-    <string name="this_is_a_businesscardsindexer_app_n_click_any_button_to_continue">this_is_a_businesscardsindexer_app_n_click_any_button_to_continue</string>
+    <string name="image_preview_accessibility">Preview of the most recently taken picture</string>
 </resources>

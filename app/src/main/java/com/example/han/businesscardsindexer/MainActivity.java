@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -39,7 +40,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 
 import static com.googlecode.leptonica.android.Rotate.rotate;
 import static com.googlecode.leptonica.android.Skew.findSkew;
@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
     Context context;
     Button takePicture;
     Button viewCards;
+    Button clearDatabase;
     ImageView imageView;
     File image;
     Boolean taken = false;
@@ -75,6 +76,7 @@ public class MainActivity extends Activity {
         // find the elements
         takePicture = (Button) findViewById(R.id.buttonTakePicture);
         viewCards = (Button) findViewById(R.id.buttonViewCards);
+        clearDatabase = (Button) findViewById(R.id.buttonClearDatabase);
         imageView = (ImageView) findViewById(R.id.image_view);
         takePicture.setOnClickListener(new ButtonClickHandler());
         viewCards.setOnClickListener(new View.OnClickListener() {
@@ -84,6 +86,13 @@ public class MainActivity extends Activity {
 
             }
         });
+        clearDatabase.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearDatabase();
+            }
+        });
+
         //imgPath = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath() + File.separator + "images" + File.separator + "pic.png";
 
 
@@ -141,13 +150,21 @@ public class MainActivity extends Activity {
 
     protected void onPhotoTaken() {
         taken = true;
+
+        String imgPath = image.getAbsolutePath();
+
+        //get the full size image for processing
+        Bitmap bitmap = BitmapFactory.decodeFile(imgPath);
+
+        //get a 1/4th size image for the preview
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 4;
-        String imgPath = image.getAbsolutePath();
-        Bitmap bitmap = BitmapFactory.decodeFile(imgPath, options);
-        imageView.setImageBitmap(bitmap);
+        Bitmap bitmapPreview = BitmapFactory.decodeFile(imgPath, options);
 
-        /*try {
+        imageView.setImageBitmap(bitmapPreview);
+
+        /*
+        try {
             ExifInterface exif = new ExifInterface(imgPath);
 
             int exifOrientation = exif.getAttributeInt(
@@ -182,33 +199,52 @@ public class MainActivity extends Activity {
         }
         catch (Exception e) {
             Log.e("exception: ", e.getMessage());
-        }*/
-
-
-        ///bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        }
+        bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        */
 
         TessBaseAPI baseApi = new TessBaseAPI();
         String DATA_PATH = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath();
         baseApi.init(DATA_PATH, "eng", TessBaseAPI.OEM_TESSERACT_ONLY);
 
+        TessBaseAPI baseApi2 = new TessBaseAPI();
+        baseApi2.init(DATA_PATH, "eng", TessBaseAPI.OEM_TESSERACT_ONLY);
+
         //baseApi.setImage(bitmap);
 
-        Pix pixs = ReadFile.readBitmap(bitmap);
+        /*
+        Preprocessing:
+            - Binarize
+            - Detect/Correct skew
+         */
 
+
+        Pix pixs = ReadFile.readBitmap(bitmap);
+        //read the file
+        //Pix pixs = ReadFile.readFile(image);
+        Pix pixForOCR1 = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.1F);
+        Log.d("OCR", "preprocessing done for first method");
+        Pix pixForOCR2 = GrayQuant.pixThresholdToBinary(pixs, 50);
+        Log.d("OCR", "preprocessing done for second method");
         //float skewDeg = -1* Skew.findSkew(pixs);
         //Log.d("skew: ", "" + skewDeg);
         //pixs = rotate(pixs, skewDeg);
         //Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs);
-        Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.1F);
-        //Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
-        baseApi.setImage(pixForOCR);
-        String recognizedText = baseApi.getUTF8Text();
-        baseApi.end();
 
+        //Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
+        baseApi.setImage(pixForOCR1);
+        String recognizedText = baseApi.getUTF8Text();
+        Log.d("OCR", "OCR done for first method");
+
+        baseApi2.setImage(pixForOCR2);
+        String recognizedText2 = baseApi2.getUTF8Text();
+        Log.d("OCR", "OCR done for second method");
+
+        baseApi.end();
         TextView myTV = (TextView) findViewById(R.id.textView);
         myTV.setText(recognizedText);
-
-        Log.d("OCR", recognizedText);
+        Log.d("OCR1", recognizedText);
+        Log.d("OCR2", recognizedText2);
 
         // bitmap = camera image
         // String recognizedText = text from image
@@ -221,30 +257,28 @@ public class MainActivity extends Activity {
         ContentValues values = new ContentValues();
 
         values.put(FeedReaderContract.FeedEntry.COLUMN_CARD_TEXT, recognizedText);
-        values.put(FeedReaderContract.FeedEntry.COLUMN_IMAGE, getBytes(bitmap));
+        //storing the 1/4th size image in the database for storege-saving reasons
+        values.put(FeedReaderContract.FeedEntry.COLUMN_IMAGE, getBytes(bitmapPreview));
+
         //values.put("cardText", recognizedText);
         //values.put("image", getBytes(bitmap));
         db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
         db.close();
+    }
 
-
-        /*
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 4;
-
-        Bitmap bitmap = BitmapFactory.decodeFile( imgPath, options );
-        imageView.setImageBitmap(bitmap);
-        */
-
+    public static void clearDatabase() {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        db.execSQL(FeedReaderContract.getDeleteString());
+        db.execSQL(FeedReaderContract.getCreateString());
+        db.close();
     }
 
     public static Cursor getImageFile() {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-        /*
-        SELECT image, FROM contacts
-         */
+        //SELECT image, FROM contacts
         String queryString = "SELECT " + FeedReaderContract.FeedEntry.COLUMN_IMAGE + " FROM " + FeedReaderContract.FeedEntry.TABLE_NAME;
+
         Cursor c = db.rawQuery(queryString, null);
         return  c;
     }
@@ -254,54 +288,6 @@ public class MainActivity extends Activity {
         bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
         return stream.toByteArray();
     }
-    /*
-    private void copyAssets() {
-        Log.d("tag", "starting copy files");
-        AssetManager assetManager = getAssets();
-        String[] files = null;
-        try {
-            files = assetManager.list("eng");
-            Log.d("info", "Length of files = " + files.length);
-        } catch (IOException e) {
-            Log.e("tag", "Failed to get asset file list.", e);
-        }
-        for(String filename : files) {
-            InputStream in = null;
-            OutputStream out = null;
-            try {
-                in = assetManager.open("eng/" + filename);
-                File outFile = new File(Environment.getDataDirectory().getAbsolutePath() + "/eng", filename);
-                out = new FileOutputStream(outFile);
-                copyFile(in, out);
-                in.close();
-                in = null;
-                out.flush();
-                out.close();
-                out = null;
-                Log.d("copied file", filename);
-            } catch(IOException e) {
-                Log.e("tag", "Failed to copy asset file: " + filename, e);
-            }
-        }
-    }
-    private void copyFile(InputStream in, OutputStream out) throws IOException {
-        byte[] buffer = new byte[1024];
-        int read;
-        while((read = in.read(buffer)) != -1){
-            out.write(buffer, 0, read);
-        }
-    }*/
-
-
-
-
-
-
-
-
-
-
-
 
     private static boolean copyAssetFolder(AssetManager assetManager,
                                            String fromAssetPath, String toPath) {
@@ -337,10 +323,8 @@ public class MainActivity extends Activity {
             out = new FileOutputStream(toPath);
             copyFile(in, out);
             in.close();
-            in = null;
             out.flush();
             out.close();
-            out = null;
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -369,4 +353,5 @@ public class MainActivity extends Activity {
             onPhotoTaken();
         }
     }
+
 }
