@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BusinessCardsIndexer</string>
+    <string name="app_name">CardIndexer</string>
     <string name="additional_details">Additional Details</string>
     <string name="company_name">Company Name</string>
     <string name="email">Email</string>
@@ -10,7 +10,7 @@
     <string name="save_changes">Save Changes</string>
     <string name="take_picture">Take Picture</string>
     <string name="main_screen"
-        >This is a BusinessCardsIndexer app.\n\nA Black screen occurs after taking a pic.\n\nClick any button to continue...</string>
+        >This is a CardIndexer app.\n\nA black screen occurs after taking a pic.\n\nClick any button to continue...</string>
     <string name="view_cards">View Cards</string>
     <string name="image_preview_accessibility">Preview of the most recently taken picture</string>
 </resources>

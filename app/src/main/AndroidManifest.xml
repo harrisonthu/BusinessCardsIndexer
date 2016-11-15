@@ -38,7 +38,6 @@
         <activity
             android:name=".CardDetails"
             android:label="Card Details" />
-        <activity android:name=".ViewCards"></activity>
 
     </application>
 
