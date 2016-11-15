@@ -78,7 +78,7 @@ public class MainActivity extends Activity {
         viewCards.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, CardDetails.class));
+                startActivity(new Intent(MainActivity.this, ViewCards.class));
 
             }
         });
@@ -115,13 +115,9 @@ public class MainActivity extends Activity {
         Intent imageIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 
-        //folder stuff
-        //imagesFolder = new File(context.getFilesDir(), "images");
-        //imagesFolder.mkdirs();
         File imagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         imagePath.mkdirs();
         image = new File(imagePath, "pic.png");
-        //image = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "pic.png");
         Uri uriSavedImage = Uri.fromFile(image);
         Log.d("image path: ", image.getAbsolutePath());
         imageIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriSavedImage);
@@ -337,6 +333,7 @@ public class MainActivity extends Activity {
     }
 
 
+    /*
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putBoolean(MainActivity.PHOTO_TAKEN, taken);
@@ -348,5 +345,5 @@ public class MainActivity extends Activity {
         if (savedInstanceState.getBoolean(MainActivity.PHOTO_TAKEN)) {
             onPhotoTaken();
         }
-    }
+    }*/
 }
