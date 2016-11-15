@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -42,7 +41,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import static com.googlecode.leptonica.android.Rotate.rotate;
-import static com.googlecode.leptonica.android.Skew.findSkew;
 
 public class MainActivity extends Activity {
 
@@ -52,11 +50,13 @@ public class MainActivity extends Activity {
     Button clearDatabase;
     ImageView imageView;
     File image;
-    Boolean taken = false;
     protected static final String PHOTO_TAKEN = "photo_taken";
     public static FeedReaderDbHelper mDbHelper;
+    //private Uri picUri;
+    Uri uriSavedImage;
 
-    //public static final int MEDIA_TYPE_IMAGE = 1;
+    //intent values
+    final static int CAMERA_CAPTURE = 1;
 
     public class ButtonClickHandler implements View.OnClickListener {
         public void onClick(View view) {
@@ -89,9 +89,6 @@ public class MainActivity extends Activity {
             }
         });
 
-        //imgPath = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath() + File.separator + "images" + File.separator + "pic.png";
-
-
         String folder_main = "tessdata";
         File tmpf = new File(getDir("bin", Context.MODE_PRIVATE).getAbsolutePath(), folder_main);
         if (!tmpf.exists()) {
@@ -103,45 +100,55 @@ public class MainActivity extends Activity {
     }
 
     protected void startCameraActivity() {
-        /*
-        File file = new File( imgPath );
-        Uri outputFileUri = Uri.fromFile( file );
 
-        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE );
-        intent.putExtra( MediaStore.EXTRA_OUTPUT, outputFileUri );
-
-        startActivityForResult( intent, 0 );
-        */
         Intent imageIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 
-        File imagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        imagePath.mkdirs();
+        File imagePath = Environment.getRootDirectory();
+        if (!imagePath.exists()) {
+            imagePath.mkdirs();
+        }
         image = new File(imagePath, "pic.png");
-        Uri uriSavedImage = Uri.fromFile(image);
-        Log.d("image path: ", image.getAbsolutePath());
+        if (image.canRead()) {
+            Log.d("Picture", "Can read");
+        }
+        else {
+            Log.d("Picture", "Error. Resorting to external storage for picture");
+            imagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            if (!imagePath.exists()) {
+                imagePath.mkdirs();
+            }
+            image = new File(imagePath, "pic.png");
+            if (image.canRead()) {
+                Log.d("Picture", "Can read");
+            }
+            else {
+                Log.d("Picture", "Fatal error. Crashing shortly...");
+            }
+        }
+        uriSavedImage = Uri.fromFile(image);
+        Log.d("image path", image.getAbsolutePath());
         imageIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriSavedImage);
-        startActivityForResult(imageIntent, 0);
-
-
+        startActivityForResult(imageIntent, CAMERA_CAPTURE);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i("Picture", "resultCode: " + resultCode);
-        switch (resultCode) {
-            case 0:
-                Log.i("Picture", "User cancelled");
-                break;
-
-            case -1:
-                onPhotoTaken();
+        //Log.i("Picture", "resultCode: " + resultCode);
+        switch (requestCode) {
+            case CAMERA_CAPTURE:
+                if (resultCode == RESULT_OK) {
+                    Log.d("Picture", "finished taking photo");
+                    //picUri = data.getData();
+                    onPhotoTaken();
+                } else if (resultCode == RESULT_CANCELED) {
+                    Log.d("Picture", "user cancelled");
+                }
                 break;
         }
     }
 
     protected void onPhotoTaken() {
-        taken = true;
 
         String imgPath = image.getAbsolutePath();
 
@@ -155,8 +162,8 @@ public class MainActivity extends Activity {
 
         imageView.setImageBitmap(bitmapPreview);
 
-        /*
-        try {
+        /*try {
+            context.getContentResolver().notifyChange(uriSavedImage, null);
             ExifInterface exif = new ExifInterface(imgPath);
 
             int exifOrientation = exif.getAttributeInt(
@@ -180,21 +187,20 @@ public class MainActivity extends Activity {
             if (rotate != 0) {
                 int w = bitmap.getWidth();
                 int h = bitmap.getHeight();
-                Log.d("rotation: ", "" + rotate);
+                Log.d("rotation", "" + rotate);
                 // Setting pre rotate
                 Matrix mtx = new Matrix();
                 mtx.preRotate(rotate);
 
                 // Rotating Bitmap & convert to ARGB_8888, required by tess
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, false);
+                //bitmap = Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, false);
             }
         }
         catch (Exception e) {
-            Log.e("exception: ", e.getMessage());
-        }
-        bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-        */
+            Log.e("exception", e.getMessage());
+        }*/
 
+        bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         TessBaseAPI baseApi = new TessBaseAPI();
         String DATA_PATH = getDir("bin", Context.MODE_PRIVATE).getAbsolutePath();
         baseApi.init(DATA_PATH, "eng", TessBaseAPI.OEM_TESSERACT_ONLY);
@@ -212,36 +218,29 @@ public class MainActivity extends Activity {
 
 
         Pix pixs = ReadFile.readBitmap(bitmap);
-        //read the file
-        //Pix pixs = ReadFile.readFile(image);
-        //Pix pixForOCR1 = Binarize.otsuAdaptiveThreshold(pixs, 100, 100, 100, 100, 0.1F);
-        //Log.d("OCR", "preprocessing done for first method");
         Pix pixForOCR1 = GrayQuant.pixThresholdToBinary(pixs, 50);
-        Log.d("OCR", "preprocessing done for second method");
-        //float skewDeg = -1* Skew.findSkew(pixs);
-        //Log.d("skew: ", "" + skewDeg);
-        //pixs = rotate(pixs, skewDeg);
-        //Pix pixForOCR = Binarize.otsuAdaptiveThreshold(pixs);
+        pixs.recycle();
 
-        //Pix pixForOCR = GrayQuant.pixThresholdToBinary(pixs, 50);
+        float skewDeg = Skew.findSkew(pixForOCR1);
+        Log.d("skew", "" + skewDeg);
+        if (skewDeg > 0) {
+            pixForOCR1 = rotate(pixForOCR1, skewDeg);
+        }
+        //Pix pixForOCR1 = Binarize.otsuAdaptiveThreshold(pixForOCR1);
+        //Pix pixForOCR1 = Binarize.otsuAdaptiveThreshold(pixForOCR1, 100, 100, 100, 100, 0.1F);
+        Log.d("OCR", "preprocessing done");
+
         baseApi.setImage(pixForOCR1);
         String recognizedText = baseApi.getUTF8Text();
-        Log.d("OCR", "OCR done for first method");
-
-        //baseApi2.setImage(pixForOCR2);
-        //String recognizedText2 = baseApi2.getUTF8Text();
-        //Log.d("OCR", "OCR done for second method");
-
+        Log.d("OCR", "OCR done");
         baseApi.end();
         TextView myTV = (TextView) findViewById(R.id.textView);
         myTV.setText(recognizedText);
-        Log.d("OCR1", recognizedText);
-        //Log.d("OCR2", recognizedText2);
+        Log.d("OCR", recognizedText);
 
-        // bitmap = camera image
+
+        // bitmapPreview = (smaller) camera image
         // String recognizedText = text from image
-
-
         // Gets the data repository in write mode
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
@@ -249,13 +248,15 @@ public class MainActivity extends Activity {
         ContentValues values = new ContentValues();
 
         values.put(FeedReaderContract.FeedEntry.COLUMN_CARD_TEXT, recognizedText);
-        //storing the 1/4th size image in the database for storege-saving reasons
+        //storing the 1/4th size image in the database for storage-saving reasons
         values.put(FeedReaderContract.FeedEntry.COLUMN_IMAGE, getBytes(bitmapPreview));
 
         //values.put("cardText", recognizedText);
         //values.put("image", getBytes(bitmap));
         db.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
         db.close();
+        pixForOCR1.recycle();
+        bitmap.recycle();
     }
 
     public static void clearDatabase() {
@@ -265,14 +266,13 @@ public class MainActivity extends Activity {
         db.close();
     }
 
-    public static Cursor getImageFile() {
+    public static Cursor getImages() {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-        //SELECT image, FROM contacts
+        //SELECT image FROM contacts
         String queryString = "SELECT " + FeedReaderContract.FeedEntry.COLUMN_IMAGE + " FROM " + FeedReaderContract.FeedEntry.TABLE_NAME;
 
-        Cursor c = db.rawQuery(queryString, null);
-        return  c;
+        return db.rawQuery(queryString, null);
     }
 
     public static byte[] getBytes(Bitmap bitmap) {
@@ -306,13 +306,11 @@ public class MainActivity extends Activity {
 
     private static boolean copyAsset(AssetManager assetManager,
                                      String fromAssetPath, String toPath) {
-        InputStream in = null;
-        OutputStream out = null;
         try {
-            in = assetManager.open(fromAssetPath);
+            InputStream in = assetManager.open(fromAssetPath);
             new File(toPath).createNewFile();
-            Log.d("assetcp: ", toPath);
-            out = new FileOutputStream(toPath);
+            Log.d("assetcp", toPath);
+            OutputStream out = new FileOutputStream(toPath);
             copyFile(in, out);
             in.close();
             out.flush();

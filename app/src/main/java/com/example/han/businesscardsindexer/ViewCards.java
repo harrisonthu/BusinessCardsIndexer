@@ -17,7 +17,7 @@ public class ViewCards extends AppCompatActivity {
         setContentView(R.layout.activity_view_cards);
 
         LinearLayout cardViewLayout = (LinearLayout) findViewById(R.id.cardViewLayout);
-        Cursor c = MainActivity.getImageFile();
+        Cursor c = MainActivity.getImages();
         c.moveToFirst();
         while (!c.isAfterLast()) {
             byte[] myBlob = c.getBlob(c.getColumnIndex(FeedReaderContract.FeedEntry.COLUMN_IMAGE));
