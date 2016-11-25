@@ -16,7 +16,6 @@ It takes a photo of a business card, uses OCR to read the text from the card and
 
 Next steps:
 - Make OCR more efficient
-- Iron out kinks in the database
 - Add search functionality
 
 How to run:
